@@ -1,0 +1,75 @@
+# Mise tasks for Local Meadow API
+
+# Development tasks
+[dev]
+description = "Start the API in development mode"
+run = "npm run dev"
+
+[build]
+description = "Build the API for production"
+run = "npm run build"
+
+[start]
+description = "Start the API in production mode"
+run = "npm run start"
+
+# Database tasks
+["db:migrate"]
+description = "Run database migrations"
+run = "npm run db:migrate"
+
+["db:seed"]
+description = "Seed the database with sample data"
+run = "npm run seed"
+
+# Testing tasks
+[test]
+description = "Run all tests"
+run = "npm test"
+
+["test:unit"]
+description = "Run unit tests"
+run = "npm run test:unit"
+
+["test:integration"]
+description = "Run integration tests"
+run = "npm run test:integration:http"
+
+# Code quality tasks
+[lint]
+description = "Lint the codebase"
+run = "npm run lint"
+
+["lint:fix"]
+description = "Lint and auto-fix issues"
+run = "npm run lint:fix"
+
+[format]
+description = "Format code with Prettier"
+run = "npm run format"
+
+# Kubernetes local development tasks
+["k8s-deploy"]
+description = "Deploy PostgreSQL and Redis to local Kubernetes"
+run = "./.mise/shell/k8s-deploy.sh"
+
+["k8s-port-forward"]
+description = "Port-forward PostgreSQL and Redis from Kubernetes to localhost"
+run = "./.mise/shell/k8s-port-forward.sh"
+
+["k8s-delete"]
+description = "Delete all Kubernetes resources (including data)"
+run = "./.mise/shell/k8s-delete.sh"
+
+# Backlog tasks
+["backlog-browser"]
+description = "Open the backlog browser for visual task management"
+run = "mise exec -- backlog browser"
+
+["backlog-overview"]
+description = "Show backlog overview"
+run = "mise exec -- backlog overview"
+
+["backlog-tasks"]
+description = "List all backlog tasks"
+run = "mise exec -- backlog task list --plain"

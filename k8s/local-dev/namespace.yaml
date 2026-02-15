@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: local-dev
+  labels:
+    environment: local-dev
+    purpose: local-development
