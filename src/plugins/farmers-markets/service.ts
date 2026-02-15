@@ -1,6 +1,9 @@
 /**
  * In-memory farmers market store.
- * Replace with a Medusa module + PostgreSQL once migrations are added.
+ * 
+ * TODO: This is being migrated to database-backed storage.
+ * Use the FarmersMarketService from the module container instead.
+ * This file is kept for backward compatibility during migration.
  */
 import type { FarmersMarket, CreateMarketInput, UpdateMarketInput } from './types'
 

@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import {
   createAdminUser,
   createConfigurationRules,
+  createCustomers,
   createDefaultCommissionLevel,
   createInventoryItemStockLevels,
   createProductCategories,
@@ -69,13 +70,16 @@ export default async function seedMarketplaceData({ container }: ExecArgs) {
   await createInventoryItemStockLevels(container, stockLocation.id)
   logger.info('Creating default commission...')
   await createDefaultCommissionLevel(container)
+  logger.info('Creating sample customers...')
+  await createCustomers(container)
 
   logger.info('=== Finished ===')
   logger.info(`Publishable api key: ${apiKey.token}`)
   logger.info(`Admin panel access:`)
-  logger.info(`email: admin@mercurjs.com`)
-  logger.info(`pass: supersecret`)
+  logger.info(`  email: admin@localmeadow.com`)
+  logger.info(`  pass: admin123`)
   logger.info(`Vendor panel access:`)
-  logger.info(`email: seller@mercurjs.com`)
-  logger.info(`pass: secret`)
+  logger.info(`  email: contact@greenvalleyfarm.com`)
+  logger.info(`  pass: farm123`)
+  logger.info(`Sample customers created: 5`)
 }

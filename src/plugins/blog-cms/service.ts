@@ -1,6 +1,9 @@
 /**
  * In-memory blog/CMS store.
- * Replace with a Medusa module + PostgreSQL for persistence.
+ * 
+ * TODO: This is being migrated to database-backed storage.
+ * Use the BlogCmsService from the module container instead.
+ * This file is kept for backward compatibility during migration.
  */
 import type { BlogPost, CreatePostInput, UpdatePostInput } from './types'
 

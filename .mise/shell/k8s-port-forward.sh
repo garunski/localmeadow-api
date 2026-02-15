@@ -62,26 +62,35 @@ if kill -0 $POSTGRES_PID 2>/dev/null && kill -0 $REDIS_PID 2>/dev/null; then
   echo "   - PostgreSQL: localhost:5432"
   echo "   - Redis: localhost:6379"
   echo ""
-  
-  # Check if dependencies are installed
-  if [ ! -f "node_modules/.bin/medusa" ]; then
-    echo "Installing dependencies (first time setup)..."
-    mise exec -- npm install
-  fi
-  
-  echo "Running database migrations..."
-  mise exec -- npm run db:migrate || echo "⚠️  Migrations failed (run manually if needed)"
+  echo "Seeding database with default data..."
+  mise exec -- npm run seed || echo "⚠️  Seeding failed (run 'mise run db:seed' manually if needed)"
   
   echo ""
-  echo "Creating default admin user..."
-  mise exec -- npm run -s -- npx medusa user -e admin@localmeadow.com -p admin123 2>/dev/null || echo "ℹ️  User may already exist"
+  echo "Updating storefront environment..."
+  ./.mise/shell/update-storefront-env.sh || echo "⚠️  Could not update storefront .env.local"
   
   echo ""
   echo "🚀 Ready! You can now start the API:"
   echo "   mise run dev"
   echo ""
-  echo "Admin UI: http://localhost:9000/app"
-  echo "Login: admin@localmeadow.com / admin123"
+  echo "💡 Schema will sync automatically on startup - no migrations needed!"
+  echo ""
+  echo "📝 Login Credentials:"
+  echo ""
+  echo "   🔧 Platform Admin (http://localhost:9000/app):"
+  echo "      Email: admin@localmeadow.com"
+  echo "      Password: admin123"
+  echo ""
+  echo "   📦 Vendor Accounts (for vendor panel - when implemented):"
+  echo "      Primary:"
+  echo "        Email: contact@greenvalleyfarm.com"
+  echo "        Password: farm123"
+  echo "        Seller: Green Valley Farm"
+  echo ""
+  echo "      Legacy:"
+  echo "        Email: seller@mercurjs.com"
+  echo "        Password: secret"
+  echo "        Seller: MercurJS Store"
   echo ""
   echo "Press Ctrl+C to stop port-forwards"
   wait

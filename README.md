@@ -25,14 +25,14 @@ npm install
 cp .env.template .env
 # Edit .env with your database and service credentials
 
-# Run migrations
-npm run db:migrate
-
-# Start development server
-npm run dev
+# Local dev: use k8s + port-forward (see docs repo doc-29, doc-30)
+mise run k8s-deploy
+mise run k8s-port-forward   # runs seed; leave running
+npm run init:mercurjs-schema # once per environment
+mise run dev                 # schema syncs on startup
 ```
 
-The API will be available at `http://localhost:9000`
+The API will be available at `http://localhost:9000`.
 
 ## Environment Variables
 
@@ -63,10 +63,10 @@ ALGOLIA_API_KEY=...
 
 ## Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server (schema syncs on startup)
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run db:migrate` - Run database migrations
+- `npm run db:seed` - Seed data; `npm run db:verify` - Verify schema
 - `npm test` - Run tests
 - `npm run lint` - Lint code
 - `npm run format` - Format code with Prettier
@@ -77,6 +77,7 @@ See deployment documentation for DigitalOcean App Platform setup with server/wor
 
 ## Documentation
 
+- **Project docs**: **localmeadow-docs** repo, in `backlog/docs/` and `backlog/decisions/`. From that repo: `mise exec -- backlog doc list` then `mise exec -- backlog doc view <id>` (e.g. doc-26 schema, doc-29 bootstrap, doc-30 k8s, doc-31 plugins).
 - [MercurJS Documentation](https://www.mercurjs.com/docs)
 - [Medusa Documentation](https://docs.medusajs.com/)
 

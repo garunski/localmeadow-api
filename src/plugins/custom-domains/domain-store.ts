@@ -1,6 +1,9 @@
 /**
  * In-memory store for custom domain → seller_id mapping.
- * Replace with DB (e.g. seller_domain table) for persistence.
+ * 
+ * TODO: This is being migrated to database-backed storage.
+ * Use the CustomDomainsService from the module container instead.
+ * This file is kept for backward compatibility during migration.
  */
 const domainToSeller = new Map<string, string>()
 

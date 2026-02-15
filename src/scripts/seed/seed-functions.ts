@@ -32,7 +32,8 @@ import {
 
 import { productsToInsert } from './seed-products'
 
-const countries = ['be', 'de', 'dk', 'se', 'fr', 'es', 'it', 'pl', 'cz', 'nl']
+const eurCountries = ['be', 'de', 'dk', 'se', 'fr', 'es', 'it', 'pl', 'cz', 'nl']
+const usCountries = ['us']
 
 export async function createAdminUser(container: MedusaContainer) {
   const authService = container.resolve(Modules.AUTH)
@@ -40,7 +41,7 @@ export async function createAdminUser(container: MedusaContainer) {
   
   // Check if admin user already exists
   const [existingUser] = await userService.listUsers({
-    email: 'admin@mercurjs.com'
+    email: 'admin@localmeadow.com'
   })
   
   if (existingUser) {
@@ -50,8 +51,8 @@ export async function createAdminUser(container: MedusaContainer) {
   // Create auth identity with password
   const { authIdentity } = await authService.register('emailpass', {
     body: {
-      email: 'admin@mercurjs.com',
-      password: 'supersecret'
+      email: 'admin@localmeadow.com',
+      password: 'admin123'
     }
   })
   
@@ -63,7 +64,7 @@ export async function createAdminUser(container: MedusaContainer) {
   const { result: user } = await createUserAccountWorkflow(container).run({
     input: {
       userData: {
-        email: 'admin@mercurjs.com',
+        email: 'admin@localmeadow.com',
         first_name: 'Admin',
         last_name: 'User'
       },
@@ -123,23 +124,40 @@ export async function createStore(
   })
 }
 export async function createRegions(container: MedusaContainer) {
-  const {
-    result: [region]
-  } = await createRegionsWorkflow(container).run({
+  const regionModuleService = container.resolve(Modules.REGION)
+  
+  // Check if regions already exist
+  const existingRegions = await regionModuleService.listRegions()
+  
+  if (existingRegions.length > 0) {
+    // Return US region if it exists, otherwise first region
+    return existingRegions.find(r => r.name === 'United States') || existingRegions[0]
+  }
+  
+  // Create both Europe and US regions
+  const { result: regions } = await createRegionsWorkflow(container).run({
     input: {
       regions: [
         {
           name: 'Europe',
           currency_code: 'eur',
-          countries,
+          countries: eurCountries,
+          payment_providers: ['pp_system_default']
+        },
+        {
+          name: 'United States',
+          currency_code: 'usd',
+          countries: usCountries,
           payment_providers: ['pp_system_default']
         }
       ]
     }
   })
 
+  // Create tax regions for all countries
+  const allCountries = [...eurCountries, ...usCountries]
   const { result: taxRegions } = await createTaxRegionsWorkflow(container).run({
-    input: countries.map((country_code) => ({
+    input: allCountries.map((country_code) => ({
       country_code
     }))
   })
@@ -151,7 +169,8 @@ export async function createRegions(container: MedusaContainer) {
     }))
   })
 
-  return region
+  // Return US region as default (for storefront default)
+  return regions.find(r => r.name === 'United States') || regions[0]
 }
 
 export async function createPublishableKey(
@@ -190,32 +209,57 @@ export async function createPublishableKey(
 }
 
 export async function createProductCategories(container: MedusaContainer) {
+  const productModuleService = container.resolve(Modules.PRODUCT)
+  
+  // Check if categories already exist
+  const existingCategories = await productModuleService.listProductCategories()
+  
+  if (existingCategories.length > 0) {
+    return existingCategories
+  }
+  
   const { result } = await createProductCategoriesWorkflow(container).run({
     input: {
       product_categories: [
         {
-          name: 'Sneakers',
-          is_active: true
+          name: 'Fresh Produce',
+          is_active: true,
+          description: 'Fresh fruits and vegetables from local farms'
         },
         {
-          name: 'Sandals',
-          is_active: true
+          name: 'Dairy & Eggs',
+          is_active: true,
+          description: 'Fresh dairy products and farm eggs'
         },
         {
-          name: 'Boots',
-          is_active: true
+          name: 'Meat & Poultry',
+          is_active: true,
+          description: 'Locally raised meat and poultry'
         },
         {
-          name: 'Sport',
-          is_active: true
+          name: 'Baked Goods',
+          is_active: true,
+          description: 'Fresh bread, pastries, and baked items'
         },
         {
-          name: 'Accessories',
-          is_active: true
+          name: 'Preserves & Honey',
+          is_active: true,
+          description: 'Jams, jellies, honey, and preserves'
         },
         {
-          name: 'Tops',
-          is_active: true
+          name: 'Beverages',
+          is_active: true,
+          description: 'Fresh juices, ciders, and local drinks'
+        },
+        {
+          name: 'Prepared Foods',
+          is_active: true,
+          description: 'Ready-to-eat meals and prepared foods'
+        },
+        {
+          name: 'Herbs & Spices',
+          is_active: true,
+          description: 'Fresh and dried herbs and spices'
         }
       ]
     }
@@ -225,26 +269,41 @@ export async function createProductCategories(container: MedusaContainer) {
 }
 
 export async function createProductCollections(container: MedusaContainer) {
+  const productModuleService = container.resolve(Modules.PRODUCT)
+  
+  // Check if collections already exist
+  const existingCollections = await productModuleService.listProductCollections()
+  
+  if (existingCollections.length > 0) {
+    return existingCollections
+  }
+  
   const { result } = await createCollectionsWorkflow(container).run({
     input: {
       collections: [
         {
-          title: 'Luxury'
+          title: 'Organic',
+          handle: 'organic'
         },
         {
-          title: 'Vintage'
+          title: 'Seasonal Favorites',
+          handle: 'seasonal'
         },
         {
-          title: 'Casual'
+          title: 'Farm Fresh',
+          handle: 'farm-fresh'
         },
         {
-          title: 'Soho'
+          title: 'Artisan Made',
+          handle: 'artisan'
         },
         {
-          title: 'Streetwear'
+          title: 'Weekend Specials',
+          handle: 'weekend-specials'
         },
         {
-          title: 'Y2K'
+          title: 'Best Sellers',
+          handle: 'best-sellers'
         }
       ]
     }
@@ -255,24 +314,46 @@ export async function createProductCollections(container: MedusaContainer) {
 
 export async function createSeller(container: MedusaContainer) {
   const authService = container.resolve(Modules.AUTH)
-
-  const { authIdentity } = await authService.register('emailpass', {
-    body: {
-      email: 'seller@mercurjs.com',
-      password: 'secret'
-    }
+  const sellerModule = container.resolve(SELLER_MODULE)
+  
+  // Check if seller already exists by handle
+  const [existingSeller] = await sellerModule.listSellers({ 
+    handle: 'green-valley-farm'
   })
+  
+  if (existingSeller) {
+    return existingSeller
+  }
+
+  // Check if auth identity already exists
+  let authIdentity
+  try {
+    const authResult = await authService.register('emailpass', {
+      body: {
+        email: 'contact@greenvalleyfarm.com',
+        password: 'farm123'
+      }
+    })
+    authIdentity = authResult.authIdentity
+  } catch (error) {
+    // If auth already exists, retrieve it
+    const authIdentities = await authService.retrieve('contact@greenvalleyfarm.com')
+    authIdentity = authIdentities
+  }
 
   const { result: seller } = await createSellerWorkflow.run({
     container,
     input: {
       auth_identity_id: authIdentity?.id,
       member: {
-        name: 'John Doe',
-        email: 'seller@mercurjs.com'
+        name: 'Sarah Johnson',
+        email: 'contact@greenvalleyfarm.com'
       },
       seller: {
-        name: 'MercurJS Store'
+        name: 'Green Valley Farm',
+        description: 'Family-owned organic farm specializing in fresh produce, artisan goods, and farm-fresh products. Serving the community since 1985.',
+        email: 'contact@greenvalleyfarm.com',
+        phone: '+1 (555) 123-4567'
       }
     }
   })
@@ -285,6 +366,21 @@ export async function createSellerStockLocation(
   sellerId: string,
   salesChannelId: string
 ) {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  
+  // Check if stock location already exists for this seller
+  const existingStock = await query.graph({
+    entity: 'stock_location',
+    fields: ['*', 'fulfillment_sets.*'],
+    filters: {
+      name: `Stock Location for seller ${sellerId}`
+    }
+  })
+  
+  if (existingStock.data.length > 0) {
+    return existingStock.data[0]
+  }
+  
   const link = container.resolve(ContainerRegistrationKeys.LINK)
   const {
     result: [stock]
@@ -342,8 +438,6 @@ export async function createSellerStockLocation(
     }
   })
 
-  const query = container.resolve(ContainerRegistrationKeys.QUERY)
-
   const {
     data: [stockLocation]
   } = await query.graph({
@@ -362,14 +456,43 @@ export async function createServiceZoneForFulfillmentSet(
   sellerId: string,
   fulfillmentSetId: string
 ) {
+  const fulfillmentService = container.resolve(Modules.FULFILLMENT)
+  
+  // Check if service zone already exists for this fulfillment set
+  const existingZones = await fulfillmentService.listServiceZones({
+    fulfillment_set: {
+      id: fulfillmentSetId
+    }
+  })
+  
+  if (existingZones.length > 0) {
+    // Link existing zone to seller if not already linked
+    const link = container.resolve(ContainerRegistrationKeys.LINK)
+    try {
+      await link.create({
+        [SELLER_MODULE]: {
+          seller_id: sellerId
+        },
+        [Modules.FULFILLMENT]: {
+          service_zone_id: existingZones[0].id
+        }
+      })
+    } catch (error) {
+      // Link might already exist, ignore
+    }
+    return existingZones[0]
+  }
+  
+  const allCountries = [...eurCountries, ...usCountries]
+  
   await createServiceZonesWorkflow.run({
     container,
     input: {
       data: [
         {
           fulfillment_set_id: fulfillmentSetId,
-          name: `Europe`,
-          geo_zones: countries.map((c) => ({
+          name: `Service Zone ${sellerId}`,
+          geo_zones: allCountries.map((c) => ({
             type: 'country',
             country_code: c
           }))
@@ -377,8 +500,6 @@ export async function createServiceZoneForFulfillmentSet(
       ]
     }
   })
-
-  const fulfillmentService = container.resolve(Modules.FULFILLMENT)
 
   const [zone] = await fulfillmentService.listServiceZones({
     fulfillment_set: {
@@ -465,6 +586,15 @@ export async function createSellerProducts(
   salesChannelId: string
 ) {
   const productService = container.resolve(Modules.PRODUCT)
+  
+  // Check if products already exist for this seller
+  const existingProducts = await productService.listProducts({}, { take: 1 })
+  
+  if (existingProducts.length > 0) {
+    // Products already exist, skip creation
+    return existingProducts
+  }
+  
   const collections = await productService.listProductCollections(
     {},
     { select: ['id', 'title'] }
@@ -512,6 +642,16 @@ export async function createInventoryItemStockLevels(
   stockLocationId: string
 ) {
   const inventoryService = container.resolve(Modules.INVENTORY)
+  
+  // Check if inventory levels already exist for this location
+  const existingLevels = await inventoryService.listInventoryLevels({
+    location_id: stockLocationId
+  })
+  
+  if (existingLevels.length > 0) {
+    return existingLevels
+  }
+  
   const items = await inventoryService.listInventoryItems(
     {},
     { select: ['id'] }
@@ -533,30 +673,104 @@ export async function createInventoryItemStockLevels(
 }
 
 export async function createDefaultCommissionLevel(container: MedusaContainer) {
-  await createCommissionRuleWorkflow.run({
-    container,
-    input: {
-      name: 'default',
-      is_active: true,
-      reference: 'site',
-      reference_id: '',
-      rate: {
-        include_tax: true,
-        type: 'percentage',
-        percentage_rate: 2
+  try {
+    await createCommissionRuleWorkflow.run({
+      container,
+      input: {
+        name: 'default',
+        is_active: true,
+        reference: 'site',
+        reference_id: '',
+        rate: {
+          include_tax: true,
+          type: 'percentage',
+          percentage_rate: 2
+        }
       }
+    })
+  } catch (error) {
+    // Rule already exists, skip
+    if (error.message?.includes('Rule already exists')) {
+      return
     }
-  })
+    throw error
+  }
 }
 
 export async function createConfigurationRules(container: MedusaContainer) {
-  for (const [ruleType, isEnabled] of ConfigurationRuleDefaults) {
-    await createConfigurationRuleWorkflow.run({
-      container,
-      input: {
-        rule_type: ruleType,
-        is_enabled: isEnabled
+  try {
+    const configModule = container.resolve('configurationModuleService')
+    
+    for (const [ruleType, isEnabled] of ConfigurationRuleDefaults) {
+      // Check if rule already exists
+      const existingRules = await configModule.listConfigurationRules({ 
+        rule_type: ruleType 
+      })
+      
+      if (existingRules.length > 0) {
+        continue // Skip if already exists
       }
+      
+      await createConfigurationRuleWorkflow.run({
+        container,
+        input: {
+          rule_type: ruleType,
+          is_enabled: isEnabled
+        }
+      })
+    }
+  } catch (error) {
+    // If configuration module doesn't exist or rules already exist, skip
+    console.log('Skipping configuration rules:', error.message)
+  }
+}
+
+export async function createCustomers(container: MedusaContainer) {
+  const customerModule = container.resolve(Modules.CUSTOMER)
+  
+  const sampleCustomers = [
+    {
+      email: 'john.doe@example.com',
+      first_name: 'John',
+      last_name: 'Doe',
+      phone: '+1234567890'
+    },
+    {
+      email: 'jane.smith@example.com',
+      first_name: 'Jane',
+      last_name: 'Smith',
+      phone: '+1234567891'
+    },
+    {
+      email: 'bob.wilson@example.com',
+      first_name: 'Bob',
+      last_name: 'Wilson',
+      phone: '+1234567892'
+    },
+    {
+      email: 'alice.brown@example.com',
+      first_name: 'Alice',
+      last_name: 'Brown',
+      phone: '+1234567893'
+    },
+    {
+      email: 'charlie.davis@example.com',
+      first_name: 'Charlie',
+      last_name: 'Davis',
+      phone: '+1234567894'
+    }
+  ]
+
+  for (const customerData of sampleCustomers) {
+    // Check if customer already exists
+    const [existingCustomer] = await customerModule.listCustomers({
+      email: customerData.email
     })
+    
+    if (existingCustomer) {
+      continue
+    }
+
+    await customerModule.createCustomers(customerData)
   }
 }

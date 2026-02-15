@@ -14,13 +14,18 @@ description = "Start the API in production mode"
 run = "npm run start"
 
 # Database tasks
-["db:migrate"]
-description = "Run database migrations"
-run = "npm run db:migrate"
+# Note: Migrations removed - schema syncs automatically on app startup
+# ["db:migrate"]
+# description = "Run database migrations (DEPRECATED - use schema sync)"
+# run = "npm run db:migrate"
 
 ["db:seed"]
 description = "Seed the database with sample data"
 run = "npm run seed"
+
+["db:verify"]
+description = "Verify database schema is in sync with models"
+run = "npm run db:verify"
 
 # Testing tasks
 [test]
@@ -60,6 +65,10 @@ run = "./.mise/shell/k8s-port-forward.sh"
 ["k8s-delete"]
 description = "Delete all Kubernetes resources (including data)"
 run = "./.mise/shell/k8s-delete.sh"
+
+["update-storefront-env"]
+description = "Update storefront .env.local with current publishable key"
+run = "./.mise/shell/update-storefront-env.sh"
 
 # Backlog tasks
 ["backlog-browser"]

@@ -35,13 +35,6 @@ module.exports = defineConfig({
       options: {}
     },
     {
-      resolve: '@mercurjs/algolia',
-      options: {
-        apiKey: process.env.ALGOLIA_API_KEY,
-        appId: process.env.ALGOLIA_APP_ID
-      }
-    },
-    {
       resolve: '@mercurjs/reviews',
       options: {}
     },
@@ -55,6 +48,22 @@ module.exports = defineConfig({
     }
   ],
   modules: [
+    // Schema Synchronization Module - replaces migration-based schema management
+    {
+      resolve: './src/modules/schema-sync'
+    },
+    // Farmers Markets Plugin
+    {
+      resolve: './src/plugins/farmers-markets'
+    },
+    // Blog/CMS Plugin
+    {
+      resolve: './src/plugins/blog-cms'
+    },
+    // Custom Domains Plugin
+    {
+      resolve: './src/plugins/custom-domains'
+    },
     ...(process.env.S3_ACCESS_KEY_ID
       ? [
           {
