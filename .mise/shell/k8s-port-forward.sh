@@ -62,12 +62,19 @@ if kill -0 $POSTGRES_PID 2>/dev/null && kill -0 $REDIS_PID 2>/dev/null; then
   echo "   - PostgreSQL: localhost:5432"
   echo "   - Redis: localhost:6379"
   echo ""
+  
+  # Check if dependencies are installed
+  if [ ! -f "node_modules/.bin/medusa" ]; then
+    echo "Installing dependencies (first time setup)..."
+    mise exec -- npm install
+  fi
+  
   echo "Running database migrations..."
   mise exec -- npm run db:migrate || echo "⚠️  Migrations failed (run manually if needed)"
   
   echo ""
   echo "Creating default admin user..."
-  mise exec -- npx medusa user -e admin@localmeadow.com -p admin123 2>/dev/null || echo "ℹ️  User may already exist"
+  mise exec -- npm run -s -- npx medusa user -e admin@localmeadow.com -p admin123 2>/dev/null || echo "ℹ️  User may already exist"
   
   echo ""
   echo "🚀 Ready! You can now start the API:"
