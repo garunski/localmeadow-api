@@ -18,23 +18,30 @@ echo "Setting kubectl context to rancher-desktop..."
 kubectl config use-context rancher-desktop
 
 echo "Updating .env file with local development URLs..."
-if [ -f "$ENV_FILE" ]; then
-  # Update existing .env
-  sed -i.bak 's|^DATABASE_URL=.*|DATABASE_URL=postgresql://postgres:postgres@localhost:5432/localmeadow|' "$ENV_FILE"
-  sed -i.bak 's|^REDIS_URL=.*|REDIS_URL=redis://:redis123@localhost:6379|' "$ENV_FILE"
-  rm -f "$ENV_FILE.bak"
-else
-  # Create new .env from template
+if [ ! -f "$ENV_FILE" ]; then
   if [ -f ".env.template" ]; then
+    echo "Creating .env from template..."
     cp .env.template .env
-    sed -i.bak 's|^DATABASE_URL=.*|DATABASE_URL=postgresql://postgres:postgres@localhost:5432/localmeadow|' "$ENV_FILE"
-    sed -i.bak 's|^REDIS_URL=.*|REDIS_URL=redis://:redis123@localhost:6379|' "$ENV_FILE"
-    rm -f "$ENV_FILE.bak"
   else
-    echo "Error: Neither $ENV_FILE nor .env.template found"
+    echo "Error: .env.template not found. Please create .env manually."
     exit 1
   fi
 fi
+
+# Update DATABASE_URL and REDIS_URL
+if grep -q "^DATABASE_URL=" "$ENV_FILE"; then
+  sed -i.bak 's|^DATABASE_URL=.*|DATABASE_URL=postgresql://postgres:postgres@localhost:5432/localmeadow|' "$ENV_FILE"
+else
+  echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/localmeadow" >> "$ENV_FILE"
+fi
+
+if grep -q "^REDIS_URL=" "$ENV_FILE"; then
+  sed -i.bak 's|^REDIS_URL=.*|REDIS_URL=redis://:redis123@localhost:6379|' "$ENV_FILE"
+else
+  echo "REDIS_URL=redis://:redis123@localhost:6379" >> "$ENV_FILE"
+fi
+
+rm -f "$ENV_FILE.bak"
 
 echo "✅ Updated $ENV_FILE"
 echo ""
